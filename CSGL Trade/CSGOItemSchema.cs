@@ -18,9 +18,6 @@ namespace CSGL_Trade
             using (sr)
             {
                 var json = sr.ReadToEnd();
-
-                var jObj = JObject.Parse(json);
-
                 return JsonConvert.DeserializeObject<CSGOItemSchema>(json);
             }
         }

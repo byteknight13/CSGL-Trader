@@ -11,10 +11,6 @@ namespace CSGL_Trade
 {
     class SteamInventory
     {
-        private SteamMarketHistory _steamMarketHistory = new SteamMarketHistory();
-
-        Threading _threading = new Threading();
-
         public string GetInventoryJson()
         {
             var webClient = new System.Net.WebClient();

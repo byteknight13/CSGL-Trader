@@ -46,13 +46,13 @@
             this.bar_txtProfileID = new DevExpress.XtraBars.BarEditItem();
             this.repositoryItemTextEdit_SteamProfile = new DevExpress.XtraEditors.Repository.RepositoryItemTextEdit();
             this.bar3 = new DevExpress.XtraBars.Bar();
+            this.barProgressBar = new DevExpress.XtraBars.BarEditItem();
+            this.repositoryItemProgressBar1 = new DevExpress.XtraEditors.Repository.RepositoryItemProgressBar();
             this.barDockControlTop = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
             this.bgwGetPricesForMyItems = new System.ComponentModel.BackgroundWorker();
-            this.barProgressBar = new DevExpress.XtraBars.BarEditItem();
-            this.repositoryItemProgressBar1 = new DevExpress.XtraEditors.Repository.RepositoryItemProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gviewItems)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.groupCSGLItems)).BeginInit();
@@ -137,7 +137,6 @@
             // 
             this.bgwGetSteamItems.WorkerReportsProgress = true;
             this.bgwGetSteamItems.WorkerSupportsCancellation = true;
-            this.bgwGetSteamItems.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwGetSteamItems_DoWork);
             // 
             // defaultLookAndFeel1
             // 
@@ -233,6 +232,21 @@
             this.bar3.OptionsBar.UseWholeRow = true;
             this.bar3.Text = "Status bar";
             // 
+            // barProgressBar
+            // 
+            this.barProgressBar.CanOpenEdit = false;
+            this.barProgressBar.Caption = "barEditItem1";
+            this.barProgressBar.Edit = this.repositoryItemProgressBar1;
+            this.barProgressBar.Id = 3;
+            this.barProgressBar.Name = "barProgressBar";
+            this.barProgressBar.Width = 250;
+            // 
+            // repositoryItemProgressBar1
+            // 
+            this.repositoryItemProgressBar1.Name = "repositoryItemProgressBar1";
+            this.repositoryItemProgressBar1.ShowTitle = true;
+            this.repositoryItemProgressBar1.Step = 1;
+            // 
             // barDockControlTop
             // 
             this.barDockControlTop.CausesValidation = false;
@@ -266,20 +280,6 @@
             this.bgwGetPricesForMyItems.WorkerReportsProgress = true;
             this.bgwGetPricesForMyItems.WorkerSupportsCancellation = true;
             // 
-            // barProgressBar
-            // 
-            this.barProgressBar.Caption = "barEditItem1";
-            this.barProgressBar.Edit = this.repositoryItemProgressBar1;
-            this.barProgressBar.Id = 3;
-            this.barProgressBar.Name = "barProgressBar";
-            this.barProgressBar.Width = 250;
-            // 
-            // repositoryItemProgressBar1
-            // 
-            this.repositoryItemProgressBar1.Name = "repositoryItemProgressBar1";
-            this.repositoryItemProgressBar1.ShowTitle = true;
-            this.repositoryItemProgressBar1.Step = 1;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -293,7 +293,6 @@
             this.Controls.Add(this.barDockControlTop);
             this.Name = "Form1";
             this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gviewItems)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.groupCSGLItems)).EndInit();

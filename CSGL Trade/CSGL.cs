@@ -10,9 +10,6 @@ namespace CSGL_Trade
 {
     class CSGL
     {
-        Threading Threading = new Threading();
-
-
 
         public Dictionary<string, string> GetItemSchema()
         {
