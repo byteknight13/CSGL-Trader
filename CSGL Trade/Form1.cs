@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace CSGL_Trade
@@ -9,7 +10,7 @@ namespace CSGL_Trade
     public partial class Form1 : DevExpress.XtraEditors.XtraForm
     {
         private CSGL _csgl = new CSGL();
-
+        private CSGOItemSchema CSGOItemSchema = new CSGOItemSchema();
         private SteamInventory _steamInventory = new SteamInventory();
 
         public Form1()
@@ -25,11 +26,10 @@ namespace CSGL_Trade
             //Reset the Grid Controls.
             ClearGridView(gridControl1);
             ClearGridView(gridControl2);
-
             gviewItems.ShowLoadingPanel();
             gviewSteamItems.ShowLoadingPanel();
 
-            bgwGetItemSchema.DoWork += BgwLoadItemSchema;
+            bgwGetItemSchema.DoWork += BgwLoadNewItemSchema; //BgwLoadItemSchema;
 
             bgwGetItemSchema.RunWorkerCompleted += RemoveLoadingScreensAndZeroItems;
 
@@ -45,6 +45,64 @@ namespace CSGL_Trade
         private void bgwGetSteamItems_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
         }
+
+        private void BgwLoadNewItemSchema(object sender, EventArgs e)
+        {
+
+
+            var CSGOIS = new CSGOItemSchema();
+            CSGOIS = CSGOIS.LoadNewInstance();
+
+
+            //Calculating maximum for the progress bar.
+            var totalItems = 0;
+            for (var i = 0; i < CSGOIS.Pages.Length; i++)
+            {
+                totalItems += CSGOIS.Pages[i].Results.Length;
+            }
+
+            Invoke((MethodInvoker)delegate { repositoryItemProgressBar1.Maximum = totalItems; });
+
+            var dt = new DataTable();
+            dt.Columns.Add("Name");
+            dt.Columns.Add("Worth");
+
+            for (var i = 0; i < CSGOIS.Pages.Length; i++)
+            {
+                for (var n = 0; n < CSGOIS.Pages[i].Results.Length; n++)
+                {
+
+
+                    var dr = dt.NewRow();
+                    dr[0] = CSGOIS.Pages[i].Results[n].SkinNameText;
+
+                    var skinName = CSGOIS.Pages[i].Results[n].SkinNameText;
+                    var itemName = CSGOIS.Pages[i].Results[n].CaseAlt;
+
+                    var subStrings = itemName.Split();
+
+
+
+                    var SMH =
+                        _steamInventory.GetMarketHistory(itemName);
+
+                    dr[1] = SMH.History[0].Price;
+                    dt.Rows.Add(dr);
+
+                    Invoke((MethodInvoker)delegate
+                    {
+
+                        barProgressBar.EditValue = ((n * i) / totalItems) * 100;
+                    });
+
+                }
+            }
+            Threading.SetControlPropertyThreadSafe(
+                gridControl1,
+                "DataSource",
+                dt);
+        }
+
 
         private void BgwLoadItemSchema(object sender, EventArgs e)
         {
@@ -216,7 +274,7 @@ namespace CSGL_Trade
         private void SetMyItemsPrices(object sender, EventArgs e)
         {
 
-            SteamInventory steamInventory = new CSGL_Trade.SteamInventory();
+            var steamInventory = new CSGL_Trade.SteamInventory();
             var dtMyInv = new DataTable();
 
             Invoke((MethodInvoker)delegate
@@ -237,9 +295,9 @@ namespace CSGL_Trade
 
                         //var drPrice = GetMyItemPriceFromCsglGridView(itemName);
 
-                        SteamMarketHistory steamMarketHistory = steamInventory.GetMarketHistory(itemName);
+                        var steamMarketHistory = steamInventory.GetMarketHistory(itemName);
 
-                        double drPrice = (double)steamMarketHistory.History[0].Price / 100;
+                        var drPrice = (double)steamMarketHistory.History[0].Price / 100;
 
                         //Console.WriteLine("Found {0} @ {1}", itemName, drPrice);
 

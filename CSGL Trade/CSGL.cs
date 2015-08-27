@@ -16,8 +16,8 @@ namespace CSGL_Trade
 
         public Dictionary<string, string> GetItemSchema()
         {
-            System.Net.WebClient webClient = new System.Net.WebClient();
-            string json = webClient.DownloadString(@"http://www.csgolounge.com/api/schema.php");
+            var webClient = new System.Net.WebClient();
+            var json = webClient.DownloadString(@"http://www.csgolounge.com/api/schema.php");
             /*using (System.IO.StreamReader sr = new System.IO.StreamReader(@"C:\itemschema.txt"))
             {
                 json = sr.ReadToEnd();
@@ -25,11 +25,11 @@ namespace CSGL_Trade
             //Remove unncessary markings, like TM, and a STAR.
             /*json = json.Replace(@"\u2122", string.Empty);//TM
             json = json.Replace(@"\u2605", string.Empty);//STAR*/
-            JObject jObj = JObject.Parse(json);
+            var jObj = JObject.Parse(json);
 
-            Dictionary<string, string> Items = new Dictionary<string, string>();
+            var Items = new Dictionary<string, string>();
 
-            for (int i = 1; i < jObj.Count - 1; i++)
+            for (var i = 1; i < jObj.Count - 1; i++)
             {
                 try
                 {

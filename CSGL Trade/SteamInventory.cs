@@ -83,10 +83,10 @@ namespace CSGL_Trade
 
             var webClient = new System.Net.WebClient();
 
-            string url = string.Format("https://open-market.io/api/prices/?item={0}&appID=730", itemName);
+            var url = string.Format("https://open-market.io/api/prices/?item={0}&appID=730", itemName);
             //Console.WriteLine("Requesting URL: {0}", url);
 
-            string json = webClient.DownloadString(url);
+            var json = webClient.DownloadString(url);
 
             return JsonConvert.DeserializeObject<SteamMarketHistory>(json);
 

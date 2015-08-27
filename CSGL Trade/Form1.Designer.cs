@@ -51,6 +51,8 @@
             this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
             this.bgwGetPricesForMyItems = new System.ComponentModel.BackgroundWorker();
+            this.barProgressBar = new DevExpress.XtraBars.BarEditItem();
+            this.repositoryItemProgressBar1 = new DevExpress.XtraEditors.Repository.RepositoryItemProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gviewItems)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.groupCSGLItems)).BeginInit();
@@ -62,6 +64,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.applicationMenu1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemTextEdit_SteamProfile)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemProgressBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // bgwGetItemSchema
@@ -158,11 +161,13 @@
             this.barManager1.Items.AddRange(new DevExpress.XtraBars.BarItem[] {
             this.barSubItem1,
             this.bar_txtProfileID,
-            this.barButtonItem1});
+            this.barButtonItem1,
+            this.barProgressBar});
             this.barManager1.MainMenu = this.bar2;
-            this.barManager1.MaxItemId = 3;
+            this.barManager1.MaxItemId = 4;
             this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
-            this.repositoryItemTextEdit_SteamProfile});
+            this.repositoryItemTextEdit_SteamProfile,
+            this.repositoryItemProgressBar1});
             this.barManager1.StatusBar = this.bar3;
             // 
             // bar2
@@ -221,6 +226,8 @@
             this.bar3.DockCol = 0;
             this.bar3.DockRow = 0;
             this.bar3.DockStyle = DevExpress.XtraBars.BarDockStyle.Bottom;
+            this.bar3.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.barProgressBar)});
             this.bar3.OptionsBar.AllowQuickCustomization = false;
             this.bar3.OptionsBar.DrawDragBorder = false;
             this.bar3.OptionsBar.UseWholeRow = true;
@@ -259,6 +266,20 @@
             this.bgwGetPricesForMyItems.WorkerReportsProgress = true;
             this.bgwGetPricesForMyItems.WorkerSupportsCancellation = true;
             // 
+            // barProgressBar
+            // 
+            this.barProgressBar.Caption = "barEditItem1";
+            this.barProgressBar.Edit = this.repositoryItemProgressBar1;
+            this.barProgressBar.Id = 3;
+            this.barProgressBar.Name = "barProgressBar";
+            this.barProgressBar.Width = 250;
+            // 
+            // repositoryItemProgressBar1
+            // 
+            this.repositoryItemProgressBar1.Name = "repositoryItemProgressBar1";
+            this.repositoryItemProgressBar1.ShowTitle = true;
+            this.repositoryItemProgressBar1.Step = 1;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -284,6 +305,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.applicationMenu1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.repositoryItemTextEdit_SteamProfile)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.repositoryItemProgressBar1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -312,6 +334,8 @@
         private DevExpress.XtraBars.BarDockControl barDockControlRight;
         private DevExpress.XtraBars.BarButtonItem barButtonItem1;
         private System.ComponentModel.BackgroundWorker bgwGetPricesForMyItems;
+        private DevExpress.XtraBars.BarEditItem barProgressBar;
+        private DevExpress.XtraEditors.Repository.RepositoryItemProgressBar repositoryItemProgressBar1;
 
     }
 }
