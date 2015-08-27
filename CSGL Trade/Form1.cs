@@ -1,8 +1,6 @@
 ﻿using DevExpress.XtraGrid;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace CSGL_Trade
@@ -10,12 +8,27 @@ namespace CSGL_Trade
     public partial class Form1 : DevExpress.XtraEditors.XtraForm
     {
         private CSGL _csgl = new CSGL();
-        private CSGOItemSchema CSGOItemSchema = new CSGOItemSchema();
         private SteamInventory _steamInventory = new SteamInventory();
+        private CSGOItemSchema CSGOItemSchema = new CSGOItemSchema();
+        private string[] itemWears = { "Field-Tested", "Well-Worn", "Battle-Scarred", "Factory New", "Minimal Wear" };
 
         public Form1()
         {
             InitializeComponent();
+        }
+
+        public string GetMyItemPriceFromCsglGridView(string itemName)
+        {
+            var dtCsgl = (DataTable)gridControl1.DataSource;
+
+            foreach (DataRow dr in dtCsgl.Rows)
+            {
+                if ((string)dr[0] == itemName)
+                {
+                    return (string)dr[1];
+                }
+            }
+            return null;
         }
 
         private void barButtonItem1_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
@@ -45,64 +58,6 @@ namespace CSGL_Trade
         private void bgwGetSteamItems_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
         }
-
-        private void BgwLoadNewItemSchema(object sender, EventArgs e)
-        {
-
-
-            var CSGOIS = new CSGOItemSchema();
-            CSGOIS = CSGOIS.LoadNewInstance();
-
-
-            //Calculating maximum for the progress bar.
-            var totalItems = 0;
-            for (var i = 0; i < CSGOIS.Pages.Length; i++)
-            {
-                totalItems += CSGOIS.Pages[i].Results.Length;
-            }
-
-            Invoke((MethodInvoker)delegate { repositoryItemProgressBar1.Maximum = totalItems; });
-
-            var dt = new DataTable();
-            dt.Columns.Add("Name");
-            dt.Columns.Add("Worth");
-
-            for (var i = 0; i < CSGOIS.Pages.Length; i++)
-            {
-                for (var n = 0; n < CSGOIS.Pages[i].Results.Length; n++)
-                {
-
-
-                    var dr = dt.NewRow();
-                    dr[0] = CSGOIS.Pages[i].Results[n].SkinNameText;
-
-                    var skinName = CSGOIS.Pages[i].Results[n].SkinNameText;
-                    var itemName = CSGOIS.Pages[i].Results[n].CaseAlt;
-
-                    var subStrings = itemName.Split();
-
-
-
-                    var SMH =
-                        _steamInventory.GetMarketHistory(itemName);
-
-                    dr[1] = SMH.History[0].Price;
-                    dt.Rows.Add(dr);
-
-                    Invoke((MethodInvoker)delegate
-                    {
-
-                        barProgressBar.EditValue = ((n * i) / totalItems) * 100;
-                    });
-
-                }
-            }
-            Threading.SetControlPropertyThreadSafe(
-                gridControl1,
-                "DataSource",
-                dt);
-        }
-
 
         private void BgwLoadItemSchema(object sender, EventArgs e)
         {
@@ -134,6 +89,59 @@ namespace CSGL_Trade
             //Threadsafe setting of the datasource.
             Threading.SetControlPropertyThreadSafe(
                 gridControl1,
+                "DataSource",
+                dt);
+        }
+
+        private void BgwLoadNewItemSchema(object sender, EventArgs e)
+        {
+            var CSGOIS = new CSGOItems();
+            CSGOIS = CSGOIS.LoadNewInstance();
+
+            //Calculating maximum for the progress bar.
+            var totalItems = CSGOIS.Count;
+            Invoke((MethodInvoker)delegate { repositoryItemProgressBar1.Maximum = totalItems; });
+
+            var dt = new DataTable();
+            dt.Columns.Add("Name");
+            dt.Columns.Add("Worth");
+
+            for (var i = 0; i < CSGOIS.Count; i++)
+            {
+                for (int n = 0; n < itemWears.Length; n++)
+                {
+                    var dr = dt.NewRow();
+
+                    string itemNameWithWear =
+                        CSGOIS.Results.Collection1[i].Weapon.Text + string.Format(" ({0})", itemWears[n]);
+
+                    SteamMarketHistory SMH = new SteamMarketHistory();
+
+                    Console.WriteLine("Getting Price For {0}", itemNameWithWear);
+
+                    SMH = _steamInventory.GetMarketHistory(itemNameWithWear);
+
+                    dr[0] = itemNameWithWear;
+                    try
+                    {
+                        dr[1] = (double)SMH.History[0].Price / 100;
+
+                        Console.WriteLine("{0} = {1}", itemNameWithWear, (double)SMH.History[0].Price / 100);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Failed Getting Price With Wear..."); Console.WriteLine(ex.Message);
+                        dr[1] = "N/A (Not Found)";
+                    }
+                    dt.Rows.Add(dr);
+
+                    Invoke((MethodInvoker)delegate
+                    {
+                        barProgressBar.EditValue = (int)n + i;
+                    });
+                }
+            }
+            Threading.SetControlPropertyThreadSafe(gridControl1,
                 "DataSource",
                 dt);
         }
@@ -238,6 +246,27 @@ namespace CSGL_Trade
             }
         }
 
+        private void gviewSteamItems_CustomColumnDisplayText(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventArgs e)
+        {
+            decimal currencyValue;
+
+            if (e.Column.FieldName == "Worth")
+            {
+                try
+                {
+                    if (Decimal.TryParse(e.Value.ToString(), out currencyValue))
+                    {
+                        e.DisplayText = string.Format("{0:c}", currencyValue);
+                        e.Column.SortMode = ColumnSortMode.DisplayText;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                }
+            }
+        }
+
         private void RemoveLoadingScreensAndZeroItems(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             RemoveZeroItems();
@@ -247,7 +276,6 @@ namespace CSGL_Trade
 
             gviewItems.HideLoadingPanel();
             gviewSteamItems.HideLoadingPanel();
-
         }
 
         private void RemoveZeroItems()
@@ -273,7 +301,6 @@ namespace CSGL_Trade
 
         private void SetMyItemsPrices(object sender, EventArgs e)
         {
-
             var steamInventory = new CSGL_Trade.SteamInventory();
             var dtMyInv = new DataTable();
 
@@ -310,40 +337,6 @@ namespace CSGL_Trade
                 });
                 gviewSteamItems.HideLoadingPanel();
                 bgwGetPricesForMyItems.CancelAsync();
-            }
-        }
-        public string GetMyItemPriceFromCsglGridView(string itemName)
-        {
-            var dtCsgl = (DataTable)gridControl1.DataSource;
-
-            foreach (DataRow dr in dtCsgl.Rows)
-            {
-                if ((string)dr[0] == itemName)
-                {
-                    return (string)dr[1];
-                }
-            }
-            return null;
-        }
-
-        private void gviewSteamItems_CustomColumnDisplayText(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventArgs e)
-        {
-            decimal currencyValue;
-
-            if (e.Column.FieldName == "Worth")
-            {
-                try
-                {
-                    if (Decimal.TryParse(e.Value.ToString(), out currencyValue))
-                    {
-                        e.DisplayText = string.Format("{0:c}", currencyValue);
-                        e.Column.SortMode = ColumnSortMode.DisplayText;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception);
-                }
             }
         }
     }
