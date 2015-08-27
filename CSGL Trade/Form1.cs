@@ -6,6 +6,11 @@ using DevExpress.XtraGrid.Views.Base;
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 // ReSharper disable LocalizableElement
@@ -134,7 +139,7 @@ namespace CSGL_Trade
 
                     var SMH = new SteamMarketHistory();
 
-                    Console.WriteLine("Getting Price For {0}", itemNameWithWear);
+                    //Console.WriteLine("Getting Price For {0}", itemNameWithWear);
 
                     SMH = _steamInventory.GetMarketHistory(itemNameWithWear);
 
@@ -143,12 +148,11 @@ namespace CSGL_Trade
                     try
                     {
                         dr[1] = (double)SMH.History[0].Price / 100;
-                        Console.WriteLine("{0} = {1}", itemNameWithWear, (double)SMH.History[0].Price / 100);
+                        //Console.WriteLine("{0} = {1}", itemNameWithWear, (double)SMH.History[0].Price / 100);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Failed Getting Price With Wear...");
-                        Console.WriteLine(ex.Message);
+                        //Console.WriteLine("Failed Getting Price With Wear...");
                         dr[1] = "N/A (Not Found)";
                     }
 
@@ -314,6 +318,160 @@ namespace CSGL_Trade
                 gviewSteamItems.HideLoadingPanel();
                 bgwGetPricesForMyItems.CancelAsync();
             }
+        }
+
+        private void gridControl2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void gviewSteamItems_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void SaveItemList()
+        {
+            WriteLine("Beginning saving...");
+
+            var dt = (DataTable)gridControl1.DataSource;
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                for (int n = 0; n < dt.Columns.Count; n++)
+                {
+                    builder.Append(dt.Rows[i][n]);
+                    if (n != dt.Columns.Count - 1)
+                    {
+                        builder.Append(",");
+                    }
+                }
+                builder.AppendLine("");
+            }
+            var path = @"data\items.txt";
+            if (!System.IO.File.Exists(path)) { System.IO.File.Create(path); }
+
+            var sw = new System.IO.StreamWriter(path);
+            sw.Write(builder.ToString());
+            sw.Close();
+            WriteLine("Saving complete.");
+
+        }
+
+        private void WriteLine(string msg)
+        {
+#if DEBUG
+            Console.WriteLine(msg);
+#endif
+        }
+
+        private void SaveItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            SaveItemList();
+        }
+        private void LoadItems()
+        {
+            try
+            {
+                ClearGridView(gridControl1);
+                var path = @"data\items.txt";
+
+                if (!File.Exists(path))
+                {
+                    MessageBox.Show("No save data!\r\nPlease reload items.");
+                }
+
+                var dt = new DataTable();
+                dt.Columns.Add("Name");
+                dt.Columns.Add("Worth");
+
+                var sr = new StreamReader(File.OpenRead(path));
+
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine();
+                    if (line != null)
+                    {
+                        var values = line.Split(',');
+                        var newRow = dt.NewRow();
+                        newRow[0] = values[0];
+                        newRow[1] = values[1];
+                        dt.Rows.Add(newRow);
+                    }
+                }
+                sr.Close();
+                sr.Dispose();
+                gridControl1.DataSource = dt;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        private void LoadItemsFromFile_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            LoadItems();
+        }
+
+        private void ReloadSteamItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            gviewSteamItems.ShowLoadingPanel();
+
+            bgwGetPricesForMyItems.DoWork +=
+                SetMyItemsPrices;
+
+            bgwGetPricesForMyItems.RunWorkerCompleted += delegate { gviewSteamItems.HideLoadingPanel(); };
+
+            bgwGetSteamItems.DoWork +=
+                BgwLoadSteamInventory;
+
+            bgwGetSteamItems.RunWorkerCompleted += delegate
+            {
+                RemoveZeroItems();
+                bgwGetPricesForMyItems.RunWorkerAsync();
+            };
+
+            bgwGetSteamItems.RunWorkerAsync();
+        }
+
+        private void FindMatchedTradingItems()
+        {
+            if (gviewSteamItems.SelectedRowsCount != 0)
+            {
+                var col = gviewSteamItems.Columns[1];
+                var selectedRow = (int)gviewSteamItems.GetSelectedRows()[0];
+
+                var itemPrice = (string)gviewSteamItems.GetRowCellValue(selectedRow, col);
+
+                WriteLine(itemPrice.ToString(CultureInfo.InvariantCulture));
+
+                var dtAllItems = (DataTable)gridControl1.DataSource;
+
+                var tradeForItems = from i in dtAllItems.AsEnumerable()
+                                    where (i.Field<string>("Worth") != "N/A (Not Found)") &&
+                                    (Convert.ToDouble(i.Field<string>("Worth")) <= Convert.ToDouble(itemPrice) + 1.00)
+                                    && (Convert.ToDouble(i.Field<string>("Worth")) >= Convert.ToDouble(itemPrice))
+                                    select i.ItemArray;
+                var dtNew = new DataTable();
+
+                dtNew.Columns.Add("Name");
+
+                dtNew.Columns.Add("Worth");
+
+                foreach (var row in tradeForItems)
+                {
+                    dtNew.Rows.Add(row);
+                }
+
+                gridControl3.DataSource = dtNew;
+            }
+        }
+
+        private void gviewSteamItems_RowCellClick(object sender, DevExpress.XtraGrid.Views.Grid.RowCellClickEventArgs e)
+        {
+
+            FindMatchedTradingItems();
         }
     }
 }
