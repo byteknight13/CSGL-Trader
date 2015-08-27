@@ -1,0 +1,9 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CSGL_Trade.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SteamProfileID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">76561198208794152</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
